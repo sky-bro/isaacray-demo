@@ -1,0 +1,21 @@
+name: "ray job test"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+    - master
+
+jobs:
+# 1. get public address
+# 2. white list public address
+# 3. remove white list
+  nvidia_smi_tset:
+    runs-on: ubuntu-latest
+    steps:
+    - name: get runner ip addresses
+      id: ip
+      uses: haythem/public-ip@v1.2
+    - name: print ip address
+      run: |
+        echo "${{ steps.ip.outputs.ipv4 }}/32"
