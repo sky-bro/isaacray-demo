@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-    - master
+    - main
 
 # env:
 #   env_var: ${{ vars.action-ray-job-test }}
@@ -24,7 +24,7 @@ jobs:
     - name: set up ak
       run: |
         aliyun configure set --mode AK \ --region ${{ env.REGION_ID }} \
-         --access-key-id ${{ env.ACCESS_KEY_ID }} \ --access-key-secret ${{ env.ACCESS_KEY_SECRET }}"
+         --access-key-id ${{ env.ACCESS_KEY_ID }} \ --access-key-secret ${{ env.ACCESS_KEY_SECRET }}
     - name: print ip address
       run: |
         echo "${{ steps.ip.outputs.ipv4 }}/32"
