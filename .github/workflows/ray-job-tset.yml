@@ -32,9 +32,14 @@ jobs:
       run: |
         aliyun adb ModifyClusterAccessWhiteList --region ${{ vars.REGION_ID }} --DBClusterId '${{ vars.ADB_CLUSTER_ID }}' \
          --SecurityIps '${{ steps.ip.outputs.ipv4 }}/32' --ModifyMode Append --version 2021-12-01 --method POST --force
-    - name: access ray head
+    - uses: actions/checkout@v4
+    - name: install dependencies
       run: |
-        curl http://47.93.210.216:8265
+        pip install -r ci/ray_utils/requirements.txt && echo "name: rayCluster01 address: ${{ secrets.RAY_ADDRESS }}" > ~/.cluster_config
+    - name: submit nvidia-smi test to ray
+      run: |
+        python3 ci/ray_utils/submit_job.py --aggregate_jobs wrap_resources.py --test
+    - run: git checkout HEAD
     - name: remove ip from adb whitelist
       run: |
         aliyun adb ModifyClusterAccessWhiteList --region ${{ vars.REGION_ID }} --DBClusterId '${{ vars.ADB_CLUSTER_ID }}' \
