@@ -6,16 +6,36 @@ on:
     branches:
     - master
 
+# env:
+#   env_var: ${{ vars.action-ray-job-test }}
+
 jobs:
 # 1. get public address
 # 2. white list public address
 # 3. remove white list
   nvidia_smi_tset:
+    environment: action-ray-job-test
     runs-on: ubuntu-latest
     steps:
     - name: get runner ip addresses
       id: ip
       uses: haythem/public-ip@v1.2
+    - uses: aliyun/setup-aliyun-cli-action@v1
+    - name: set up ak
+      run: |
+        aliyun configure set --mode AK \ --region ${{ env.REGION_ID }} \
+         --access-key-id ${{ env.ACCESS_KEY_ID }} \ --access-key-secret ${{ env.ACCESS_KEY_SECRET }}"
     - name: print ip address
       run: |
         echo "${{ steps.ip.outputs.ipv4 }}/32"
+    - name: add ip to adb whitelist
+      run: |
+        aliyun adb ModifyClusterAccessWhiteList --region ${{ env.REGION_ID }} --DBClusterId '${{ env.ADB_CLUSTER_ID }}' \
+         --SecurityIps '${{ steps.ip.outputs.ipv4 }}/32' --ModifyMode Append --version 2021-12-01 --method POST --force
+    - name: access ray head
+      run: |
+        curl http://47.93.210.216:8265
+    - name: remove ip from adb whitelist
+      run: |
+        aliyun adb ModifyClusterAccessWhiteList --region ${{ env.REGION_ID }} --DBClusterId '${{ env.ADB_CLUSTER_ID }}' \
+         --SecurityIps '${{ steps.ip.outputs.ipv4 }}/32' --ModifyMode Delete --version 2021-12-01 --method POST --force
