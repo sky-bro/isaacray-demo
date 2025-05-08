@@ -23,8 +23,8 @@ jobs:
     - uses: aliyun/setup-aliyun-cli-action@v1
     - name: set up ak
       run: |
-        aliyun configure set --mode AK \ --region ${{ vars.REGION_ID }} \
-         --access-key-id ${{ secrets.ACCESS_KEY_ID }} \ --access-key-secret ${{ secrets.ACCESS_KEY_SECRET }}
+        aliyun configure set --mode AK --region ${{ vars.REGION_ID }} \
+         --access-key-id ${{ secrets.ACCESS_KEY_ID }} --access-key-secret ${{ secrets.ACCESS_KEY_SECRET }}
     - name: print ip address
       run: |
         echo "${{ steps.ip.outputs.ipv4 }}/32"
