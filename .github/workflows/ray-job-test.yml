@@ -38,7 +38,7 @@ jobs:
     - name: submit reinforcement learning job to ray
       run: |
         python3 ci/ray_utils/submit_job.py --aggregate_jobs wrap_resources.py \
-         --num_workers 3 2 2 \
+         --gpu_per_worker 2 3 4 --cpu_per_worker 32 32 32 --ram_gb_per_worker 128 128 128 \
          --sub_jobs /workspace/isaaclab/isaaclab.sh -p /workspace/isaaclab/scripts/reinforcement_learning/rl_games/train.py --task=Isaac-Cartpole-v0 --headless \
           + /workspace/isaaclab/isaaclab.sh -p /workspace/isaaclab/scripts/reinforcement_learning/rl_games/train.py --task=Isaac-Ant-v0 --headless \
            + /workspace/isaaclab/isaaclab.sh -p /workspace/isaaclab/scripts/reinforcement_learning/rl_games/train.py --task=Isaac-Ant-v0 --headless
