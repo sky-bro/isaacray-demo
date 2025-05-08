@@ -6,13 +6,7 @@ on:
     branches:
     - main
 
-# env:
-#   env_var: ${{ vars.action-ray-job-test }}
-
 jobs:
-# 1. get public address
-# 2. white list public address
-# 3. remove white list
   nvidia_smi_tset:
     environment: action-ray-job-test
     runs-on: ubuntu-latest
@@ -29,9 +23,14 @@ jobs:
       run: |
         echo "${{ steps.ip.outputs.ipv4 }}/32"
     - name: add ip to adb whitelist
-      run: |
-        aliyun adb ModifyClusterAccessWhiteList --region ${{ vars.REGION_ID }} --DBClusterId '${{ vars.ADB_CLUSTER_ID }}' \
-         --SecurityIps '${{ steps.ip.outputs.ipv4 }}/32' --ModifyMode Append --version 2021-12-01 --method POST --force
+      uses: gacts/run-and-post-run@v1
+      with:
+        run: |
+          aliyun adb ModifyClusterAccessWhiteList --region ${{ vars.REGION_ID }} --DBClusterId '${{ vars.ADB_CLUSTER_ID }}' \
+          --SecurityIps '${{ steps.ip.outputs.ipv4 }}/32' --ModifyMode Append --version 2021-12-01 --method POST --force
+        post: | # remove ip from adb whitelist
+          aliyun adb ModifyClusterAccessWhiteList --region ${{ vars.REGION_ID }} --DBClusterId '${{ vars.ADB_CLUSTER_ID }}' \
+          --SecurityIps '${{ steps.ip.outputs.ipv4 }}/32' --ModifyMode Delete --version 2021-12-01 --method POST --force
     - uses: actions/checkout@v4
     - name: install dependencies
       run: |
@@ -39,14 +38,9 @@ jobs:
     - name: submit nvidia-smi test to ray
       run: |
         python3 ci/ray_utils/submit_job.py --aggregate_jobs wrap_resources.py --test
-    - name: test reinforcement learning
+    - name: submit reinforcement learning job to ray
       run: |
-        python3 scripts/reinforcement_learning/ray/submit_job.py --aggregate_jobs wrap_resources.py --num_workers 1 1 1 \
+        python3 ci/ray_utils/submit_job.py --aggregate_jobs wrap_resources.py --num_workers 1 1 1 \
          --sub_jobs /workspace/isaaclab/isaaclab.sh -p /workspace/isaaclab/scripts/reinforcement_learning/rl_games/train.py --task=Isaac-Cartpole-v0 --headless \
           + /workspace/isaaclab/isaaclab.sh -p /workspace/isaaclab/scripts/reinforcement_learning/rl_games/train.py --task=Isaac-Ant-v0 --headless \
            + /workspace/isaaclab/isaaclab.sh -p /workspace/isaaclab/scripts/reinforcement_learning/rl_games/train.py --task=Isaac-Ant-v0 --headless
-    - run: git checkout HEAD
-    - name: remove ip from adb whitelist
-      run: |
-        aliyun adb ModifyClusterAccessWhiteList --region ${{ vars.REGION_ID }} --DBClusterId '${{ vars.ADB_CLUSTER_ID }}' \
-         --SecurityIps '${{ steps.ip.outputs.ipv4 }}/32' --ModifyMode Delete --version 2021-12-01 --method POST --force
